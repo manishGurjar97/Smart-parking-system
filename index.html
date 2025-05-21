@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Parking System Dashboard</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+
+        .parking-slot {
+            display: inline-block;
+            width: 160px;
+            height: 180px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin: 10px;
+            padding: 20px;
+            transition: transform 0.3s ease;
+            text-align: center;
+        }
+
+        .parking-slot:hover {
+            transform: scale(1.05);
+        }
+
+        .parking-slot h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .led {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: red;
+            margin: 0 auto;
+            box-shadow: 0 0 20px red;
+            transition: background-color 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        .led.on {
+            background-color: green;
+            box-shadow: 0 0 20px green;
+        }
+
+        .status {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .status.available {
+            color: #00ff00;
+        }
+
+        .status.occupied {
+            color: #ff3333;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 16px;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Smart Parking System</h1>
+    <div class="parking-slot">
+        <h3>Slot 1</h3>
+        <div id="led1" class="led"></div>
+        <div id="status1" class="status">Loading...</div>
+    </div>
+    <div class="parking-slot">
+        <h3>Slot 2</h3>
+        <div id="led2" class="led"></div>
+        <div id="status2" class="status">Loading...</div>
+    </div>
+    <div class="parking-slot">
+        <h3>Slot 3</h3>
+        <div id="led3" class="led"></div>
+        <div id="status3" class="status">Loading...</div>
+    </div>
+    <div class="parking-slot">
+        <h3>Slot 4</h3>
+        <div id="led4" class="led"></div>
+        <div id="status4" class="status">Loading...</div>
+    </div>
+
+    <div class="footer">
+        <p>Real-time parking slot availability using ESP32 and sensors.</p>
+    </div>
+</div>
+
+<script>
+    function fetchSensorData() {
+        fetch('status.php')
+        .then(response => response.text())
+        .then(data => {
+            const lines = data.trim().split('\n');
+
+            // Assuming the data follows the format:
+            // Sensor 1: on
+            // Sensor 2: off
+            // Sensor 3: on
+            // Sensor 4: off
+
+            updateSlot('led1', 'status1', lines[0].includes('on'));
+            updateSlot('led2', 'status2', lines[1].includes('on'));
+            updateSlot('led3', 'status3', lines[2].includes('on'));
+            updateSlot('led4', 'status4', lines[3].includes('on'));
+        })
+        .catch(error => {
+            console.error('Error fetching sensor data:', error);
+        });
+    }
+
+    function updateSlot(ledId, statusId, isAvailable) {
+        const led = document.getElementById(ledId);
+        const status = document.getElementById(statusId);
+
+        if (isAvailable) {
+            led.classList.add('on');
+            status.textContent = 'Available';
+            status.classList.add('available');
+            status.classList.remove('occupied');
+        } else {
+            led.classList.remove('on');
+            status.textContent = 'Occupied';
+            status.classList.add('occupied');
+            status.classList.remove('available');
+        }
+    }
+
+    // Fetch sensor data every second
+    setInterval(fetchSensorData, 1000);
+
+    // Fetch data immediately on load
+    fetchSensorData();
+</script>
+
+</body>
+</html>
